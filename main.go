@@ -9,9 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"web_app/controller"
 	"web_app/dao/mysql"
 	"web_app/dao/redis"
 	"web_app/logger"
+	"web_app/pkg/snowflake"
 	"web_app/routes"
 	"web_app/settings"
 
@@ -19,6 +21,11 @@ import (
 )
 
 func main() {
+	// 初始化validator校验翻译器
+	if err := controller.InitTrans("zh"); err != nil {
+		fmt.Printf("init trans failed, err:%v\n", err)
+		return
+	}
 	// 1. 加载配置
 	if err := settings.Init(); err != nil {
 		fmt.Printf("init settings failed, err:%v\n", err)
@@ -44,6 +51,10 @@ func main() {
 		return
 	}
 	defer redis.Close()
+	if err := snowflake.Init(settings.Conf.SnowFlake.StartTime, settings.Conf.SnowFlake.MachineId); err != nil {
+		fmt.Printf("init snowflake failed, err:%v\n", err)
+		return
+	}
 	// 5. 注册路由
 	r := routes.Setup()
 	// 6. 启动服务（优雅关机）
