@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -18,7 +17,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func Init(cfg *settings.LogConfig) (err error) {
+func Init(cfg *settings.LogConfig, mode string) (err error) {
 	writeSyncer := getLogWriter(
 		cfg.Filename,
 		cfg.MaxSize,
@@ -27,11 +26,20 @@ func Init(cfg *settings.LogConfig) (err error) {
 	)
 	encoder := getEncoder()
 	var l = new(zapcore.Level)
-	err = l.UnmarshalText([]byte(cfg.Level))
-	if err != nil {
+	if err = l.UnmarshalText([]byte(cfg.Level)); err != nil {
 		return
 	}
-	core := zapcore.NewCore(encoder, writeSyncer, l)
+	var core zapcore.Core
+	if mode == "dev" {
+		consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+		core = zapcore.NewTee(
+			zapcore.NewCore(encoder, writeSyncer, l),
+			zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stdout), l),
+		)
+	} else {
+		core = zapcore.NewCore(encoder, writeSyncer, l)
+	}
+
 	lg := zap.New(core, zap.AddCaller())
 	// 替换zap库中全局的logger
 	zap.ReplaceGlobals(lg)
@@ -55,8 +63,7 @@ func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.Write
 		MaxBackups: maxBackup,
 		MaxAge:     maxAge,
 	}
-	writer := io.MultiWriter(lumberJackLogger, os.Stdout)
-	return zapcore.AddSync(writer)
+	return zapcore.AddSync(lumberJackLogger)
 }
 
 // GinLogger 接收gin框架默认的日志
