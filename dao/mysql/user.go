@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"crypto/md5"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"web_app/models"
@@ -10,7 +11,9 @@ import (
 const secret = "miqimiaomiaowu"
 
 var (
-	ErrorUserExist = errors.New("用户已存在")
+	ErrorUserExist       = errors.New("用户已存在")
+	ErrorUserNotExist    = errors.New("用户不存在")
+	ErrorInvalidPassword = errors.New("用户名或密码错误")
 )
 
 // CheckUserExist 根据用户名，判读用户是否存在
@@ -32,6 +35,26 @@ func CreateUser(user *models.User) (err error) {
 	sqlStr := "insert into user(user_id, username, password) values (:user_id,:username,:password)"
 	user.PassWord = encryptPassword(user.PassWord)
 	_, err = db.NamedExec(sqlStr, user)
+	return
+}
+
+// Login 登录用户
+func Login(user *models.User) (err error) {
+	oPassword := user.PassWord // 用户登录的密码
+	sqlStr := "select user_id,username,password from user where username=?"
+	err = db.Get(user, sqlStr, user.UserName)
+	if err == sql.ErrNoRows {
+		return ErrorUserNotExist
+	}
+	if err != nil {
+		// 查询数据库失败
+		return err
+	}
+	// 判断密码是否正确
+	password := encryptPassword(oPassword)
+	if password != user.PassWord {
+		return ErrorInvalidPassword
+	}
 	return
 }
 

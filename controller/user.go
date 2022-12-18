@@ -1,7 +1,8 @@
 package controller
 
 import (
-	"net/http"
+	"errors"
+	"web_app/dao/mysql"
 	"web_app/models"
 	"web_app/service"
 
@@ -18,34 +19,55 @@ func SignUpHandler(ctx *gin.Context) {
 	// 1. 获取参数和参数校验
 	if err := ctx.ShouldBindJSON(param); err != nil {
 		zap.L().Error("[SignUpHandler]解析参数异常", zap.Error(err))
-		errors, ok := err.(validator.ValidationErrors)
+		errs, ok := err.(validator.ValidationErrors)
 		if !ok {
 			// 非validator.ValidationErrors类型错误直接返回
-			ctx.JSON(http.StatusOK, gin.H{
-				"msg": err.Error(),
-			})
+			ResponseError(ctx, CodeInvalidParam)
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{
-			"msg": removeTopStruct(errors.Translate(trans)),
-		})
+		ResponseErrorWithMsg(ctx, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
 
 	// 2. 业务处理
 	if err := service.SignUp(param); err != nil {
 		zap.L().Error("logic.SignUp failed", zap.Error(err))
-		ctx.JSON(http.StatusOK, gin.H{
-			"code":    0,
-			"message": "注册失败",
-			"data":    struct{}{},
-		})
+		if errors.Is(err, mysql.ErrorUserExist) {
+			ResponseError(ctx, CodeUserExist)
+			return
+		}
+		ResponseError(ctx, CodeServerBusy)
 		return
 	}
 	// 3. 返回响应结果
-	ctx.JSON(http.StatusOK, gin.H{
-		"code":    0,
-		"message": "创建成功",
-		"data":    struct{}{},
-	})
+	ResponseSuccess(ctx, struct{}{})
+}
+
+// Login 登录函数
+func Login(ctx *gin.Context) {
+	param := new(models.ParamLogin)
+	// 1. 获取参数和参数校验
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		zap.L().Error("[SignUpHandler]解析参数异常", zap.Error(err))
+		errs, ok := err.(validator.ValidationErrors)
+		if !ok {
+			// 非validator.ValidationErrors类型错误直接返回
+			ResponseError(ctx, CodeInvalidParam)
+			return
+		}
+		ResponseErrorWithMsg(ctx, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
+		return
+	}
+	// 进行业务处理
+	if err := service.Login(param); err != nil {
+		zap.L().Error("service.Login failed", zap.Error(err))
+		if errors.Is(err, mysql.ErrorUserNotExist) {
+			ResponseError(ctx, CodeUserNotExist)
+			return
+		}
+		ResponseError(ctx, CodeInvalidPassword)
+		return
+	}
+	// 3.返回响应
+	ResponseSuccess(ctx, struct{}{})
 }

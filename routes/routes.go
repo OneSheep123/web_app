@@ -16,6 +16,7 @@ func Setup(mode string) *gin.Engine {
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 
 	r.POST("/signup", controller.SignUpHandler)
+	r.POST("/login", controller.Login)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
