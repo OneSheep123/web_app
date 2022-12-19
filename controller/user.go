@@ -59,7 +59,8 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	// 进行业务处理
-	if err := service.Login(param); err != nil {
+	token, err := service.Login(param)
+	if err != nil {
 		zap.L().Error("service.Login failed", zap.Error(err))
 		if errors.Is(err, mysql.ErrorUserNotExist) {
 			ResponseError(ctx, CodeUserNotExist)
@@ -69,5 +70,5 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	// 3.返回响应
-	ResponseSuccess(ctx, struct{}{})
+	ResponseSuccess(ctx, token)
 }
