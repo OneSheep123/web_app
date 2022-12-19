@@ -38,24 +38,39 @@ func CreateUser(user *models.User) (err error) {
 	return
 }
 
+// GetUserId 通过user信息获取userId
+func GetUserId(user *models.User) (int, error) {
+	sqlStr := "select user_id from user where username=?"
+	rows, err := db.Queryx(sqlStr, user.UserName)
+	if err != nil {
+		return -1, err
+	}
+	userId := 0
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&userId)
+	}
+	return userId, nil
+}
+
 // Login 登录用户
-func Login(user *models.User) (err error) {
+func Login(user *models.User) (userId int, err error) {
 	oPassword := user.PassWord // 用户登录的密码
 	sqlStr := "select user_id,username,password from user where username=?"
 	err = db.Get(user, sqlStr, user.UserName)
 	if err == sql.ErrNoRows {
-		return ErrorUserNotExist
+		return -1, ErrorUserNotExist
 	}
 	if err != nil {
 		// 查询数据库失败
-		return err
+		return -1, err
 	}
 	// 判断密码是否正确
 	password := encryptPassword(oPassword)
 	if password != user.PassWord {
-		return ErrorInvalidPassword
+		return -1, ErrorInvalidPassword
 	}
-	return
+	return int(user.UserID), nil
 }
 
 // encryptPassword 密码加密

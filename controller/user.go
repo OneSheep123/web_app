@@ -3,7 +3,9 @@ package controller
 import (
 	"errors"
 	"web_app/dao/mysql"
+	"web_app/dao/redis"
 	"web_app/models"
+	"web_app/pkg/jwt"
 	"web_app/service"
 
 	"github.com/go-playground/validator/v10"
@@ -44,7 +46,7 @@ func SignUpHandler(ctx *gin.Context) {
 }
 
 // Login 登录函数
-func Login(ctx *gin.Context) {
+func LoginHandler(ctx *gin.Context) {
 	param := new(models.ParamLogin)
 	// 1. 获取参数和参数校验
 	if err := ctx.ShouldBindJSON(param); err != nil {
@@ -59,16 +61,31 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	// 进行业务处理
-	token, err := service.Login(param)
+	userId, err := service.Login(param)
 	if err != nil {
 		zap.L().Error("service.Login failed", zap.Error(err))
 		if errors.Is(err, mysql.ErrorUserNotExist) {
 			ResponseError(ctx, CodeUserNotExist)
 			return
 		}
+		if errors.Is(err, service.ErrorUserLogin) {
+			ResponseError(ctx, CodeUserHadLogin)
+			return
+		}
 		ResponseError(ctx, CodeInvalidPassword)
 		return
 	}
+	aToken, rToken, err := jwt.GenToken(int64(userId))
+	if err != nil {
+		ResponseError(ctx, COdeTokenGetError)
+		return
+	}
+	redis.SaveUserLoginState(userId, aToken)
 	// 3.返回响应
-	ResponseSuccess(ctx, token)
+	ResponseSuccess(ctx, gin.H{
+		"accessToken":  aToken,
+		"refreshToken": rToken,
+		"userID":       userId,
+		"username":     param.Username,
+	})
 }

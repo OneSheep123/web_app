@@ -1,10 +1,15 @@
 package service
 
 import (
+	"errors"
 	"web_app/dao/mysql"
+	"web_app/dao/redis"
 	"web_app/models"
-	"web_app/pkg/jwt"
 	"web_app/pkg/snowflake"
+)
+
+var (
+	ErrorUserLogin = errors.New("用户已经登录")
 )
 
 func SignUp(up *models.ParamSignUp) (err error) {
@@ -22,13 +27,22 @@ func SignUp(up *models.ParamSignUp) (err error) {
 	return mysql.CreateUser(u)
 }
 
-func Login(param *models.ParamLogin) (token string, err error) {
+func Login(param *models.ParamLogin) (userId int, err error) {
 	user := &models.User{
 		UserName: param.Username,
 		PassWord: param.Password,
 	}
-	if err = mysql.Login(user); err != nil {
-		return
+	// 限制一账号只能登录一次
+	id, err := mysql.GetUserId(user)
+	if err != nil {
+		return -1, err
 	}
-	return jwt.GenToken(user.UserID, user.UserName)
+	if redis.IsUserLogin(id) {
+		return -1, ErrorUserLogin
+	}
+	userId, err = mysql.Login(user)
+	if err != nil {
+		return -1, err
+	}
+	return userId, nil
 }

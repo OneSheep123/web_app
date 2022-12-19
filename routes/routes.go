@@ -15,15 +15,17 @@ func Setup(mode string) *gin.Engine {
 	}
 	r := gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
+	v1 := r.Group("/api/v1")
+	v1.POST("/login", controller.LoginHandler)
+	v1.POST("/signup", controller.SignUpHandler)
 
-	r.POST("/signup", controller.SignUpHandler)
-	r.POST("/login", controller.Login)
 	r.GET("/ping", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
 		// 如果是登录的用户,判断请求头中是否有 有效的JWT  ？
 		c.JSON(http.StatusOK, gin.H{
 			"msg": "ok",
 		})
 	})
+
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"msg": "404",
