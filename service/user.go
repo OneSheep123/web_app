@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"web_app/dao/mysql"
-	"web_app/dao/redis"
 	"web_app/models"
 	"web_app/pkg/snowflake"
 )
@@ -32,13 +31,8 @@ func Login(param *models.ParamLogin) (userId int, err error) {
 		UserName: param.Username,
 		PassWord: param.Password,
 	}
-	// 限制一账号只能登录一次
-	id, err := mysql.GetUserId(user)
 	if err != nil {
 		return -1, err
-	}
-	if redis.IsUserLogin(id) {
-		return -1, ErrorUserLogin
 	}
 	userId, err = mysql.Login(user)
 	if err != nil {
