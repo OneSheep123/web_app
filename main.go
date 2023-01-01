@@ -9,12 +9,12 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	"web_app/controller"
 	"web_app/dao/mysql"
 	"web_app/dao/redis"
 	"web_app/logger"
 	"web_app/pkg/snowflake"
 	"web_app/routes"
+	"web_app/service"
 	"web_app/settings"
 
 	"go.uber.org/zap"
@@ -22,7 +22,7 @@ import (
 
 func main() {
 	// 初始化validator校验翻译器
-	if err := controller.InitTrans("zh"); err != nil {
+	if err := service.InitTrans("zh"); err != nil {
 		fmt.Printf("init trans failed, err:%v\n", err)
 		return
 	}

@@ -27,7 +27,7 @@ func SignUpHandler(ctx *gin.Context) {
 			ResponseError(ctx, CodeInvalidParam)
 			return
 		}
-		ResponseErrorWithMsg(ctx, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
+		ResponseErrorWithMsg(ctx, CodeInvalidParam, service.RemoveTopStruct(errs.Translate(service.Trans)))
 		return
 	}
 
@@ -45,7 +45,7 @@ func SignUpHandler(ctx *gin.Context) {
 	ResponseSuccess(ctx, struct{}{})
 }
 
-// Login 登录函数
+// LoginHandler 登录函数
 func LoginHandler(ctx *gin.Context) {
 	param := new(models.ParamLogin)
 	// 1. 获取参数和参数校验
@@ -57,7 +57,7 @@ func LoginHandler(ctx *gin.Context) {
 			ResponseError(ctx, CodeInvalidParam)
 			return
 		}
-		ResponseErrorWithMsg(ctx, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
+		ResponseErrorWithMsg(ctx, CodeInvalidParam, service.RemoveTopStruct(errs.Translate(service.Trans)))
 		return
 	}
 	// 进行业务处理
@@ -77,7 +77,7 @@ func LoginHandler(ctx *gin.Context) {
 	}
 	aToken, rToken, err := jwt.GenToken(int64(userId))
 	if err != nil {
-		ResponseError(ctx, COdeTokenGetError)
+		ResponseError(ctx, CodeTokenGetError)
 		return
 	}
 	redis.SaveUserLoginState(userId, aToken)

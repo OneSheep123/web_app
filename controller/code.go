@@ -13,7 +13,7 @@ const (
 	CodeNeedLogin
 	CodeInvalidToken
 	CodeUserHadLogin
-	COdeTokenGetError
+	CodeTokenGetError
 )
 
 var codeMsgMap = map[ResCode]string{
@@ -27,7 +27,7 @@ var codeMsgMap = map[ResCode]string{
 	CodeNeedLogin:     "需要登录",
 	CodeInvalidToken:  "无效的token",
 	CodeUserHadLogin:  "用户已经登录过",
-	COdeTokenGetError: "Token获取失败",
+	CodeTokenGetError: "Token获取失败",
 }
 
 func (c ResCode) Msg() string {

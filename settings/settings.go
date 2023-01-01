@@ -63,8 +63,6 @@ func Init() (err error) {
 		// 读取配置信息失败
 		return
 	}
-	// 尝试从air文件中获取到配置
-	fmt.Println(viper.Get("APP_ENV"))
 	// 把读取到的配置信息反序列化到 Conf 变量中
 	if err := viper.Unmarshal(Conf); err != nil {
 		fmt.Printf("viper.Unmarshal failed, err:%v\n", err)
