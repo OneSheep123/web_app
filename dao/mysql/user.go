@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"web_app/models"
+
+	"go.uber.org/zap"
 )
 
 const secret = "miqimiaomiaowu"
@@ -53,6 +55,23 @@ func GetUserId(user *models.User) (int, error) {
 	return userId, nil
 }
 
+// GetUserNameByAuthorId 通过用户id获取用户名
+func GetUserNameByAuthorId(uid int64) (user *models.User, err error) {
+	user = new(models.User)
+	sqlStr := "select username from user where user_id = ?"
+	err = db.Get(user, sqlStr, uid)
+	if err == sql.ErrNoRows {
+		err = ErrorInvalidID
+		return
+	}
+	if err != nil {
+		zap.L().Error("query community failed", zap.String("sql", sqlStr), zap.Error(err))
+		err = ErrorQueryFailed
+		return
+	}
+	return
+}
+
 // Login 登录用户
 func Login(user *models.User) (userId int, err error) {
 	oPassword := user.PassWord // 用户登录的密码
@@ -78,4 +97,11 @@ func encryptPassword(oPassword string) string {
 	h := md5.New()
 	h.Write([]byte(secret))
 	return hex.EncodeToString(h.Sum([]byte(oPassword)))
+}
+
+func GetUserByID(idStr string) (user *models.User, err error) {
+	user = new(models.User)
+	sqlStr := `select user_id, username from user where user_id = ?`
+	err = db.Get(user, sqlStr, idStr)
+	return
 }

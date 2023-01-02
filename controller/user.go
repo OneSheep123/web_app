@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"web_app/dao/mysql"
 	"web_app/dao/redis"
 	"web_app/models"
@@ -85,7 +86,7 @@ func LoginHandler(ctx *gin.Context) {
 	ResponseSuccess(ctx, gin.H{
 		"accessToken":  aToken,
 		"refreshToken": rToken,
-		"userID":       userId,
+		"userID":       fmt.Sprintf("%d", userId),
 		"username":     param.Username,
 	})
 }

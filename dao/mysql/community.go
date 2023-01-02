@@ -19,11 +19,28 @@ func GetCommunityList() (communityList []*models.Community, err error) {
 }
 
 // GetCommunityDetail 获取社区详情
-func GetCommunityDetail(id string) (community *models.CommunityDetail, err error) {
+func GetCommunityDetail(id int) (community *models.CommunityDetail, err error) {
 	// 获取单个的时候会，这里需要进行new一下
 	community = new(models.CommunityDetail)
 	sqlStr := `select community_id, community_name, introduction, create_time from community where community_id = ?`
 	err = db.Get(community, sqlStr, id)
+	if err == sql.ErrNoRows {
+		err = ErrorInvalidID
+		return
+	}
+	if err != nil {
+		zap.L().Error("query community failed", zap.String("sql", sqlStr), zap.Error(err))
+		err = ErrorQueryFailed
+		return
+	}
+	return
+}
+
+// GetCommunityNameById 通过社区id获取社区名称
+func GetCommunityNameById(cId int64) (community *models.CommunityDetail, err error) {
+	community = new(models.CommunityDetail)
+	sqlStr := "select community_name from community where community_id = ?"
+	err = db.Get(community, sqlStr, cId)
 	if err == sql.ErrNoRows {
 		err = ErrorInvalidID
 		return

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"strconv"
 	"web_app/service"
 
 	"go.uber.org/zap"
@@ -21,7 +22,13 @@ func CommunityHandler(ctx *gin.Context) {
 
 // CommunityDetailHandler 社区详情
 func CommunityDetailHandler(c *gin.Context) {
-	communityID := c.Param("id")
+	param := c.Param("id")
+	communityID, err := strconv.Atoi(param)
+	if err != nil {
+		zap.L().Error("参数有误", zap.Error(err))
+		ResponseError(c, CodeInvalidParam)
+		return
+	}
 	communityList, err := service.GetCommunityByID(communityID)
 	if err != nil {
 		zap.L().Error("mysql.GetCommunityByID() failed", zap.Error(err))
