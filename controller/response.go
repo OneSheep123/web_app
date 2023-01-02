@@ -15,6 +15,7 @@ import (
 
 */
 
+// ResponseData 响应数据格式
 type ResponseData struct {
 	Code ResCode     `json:"code"`
 	Msg  interface{} `json:"msg"`

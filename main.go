@@ -18,8 +18,16 @@ import (
 	"web_app/settings"
 
 	"go.uber.org/zap"
+
+	_ "web_app/docs"
 )
 
+// @title gin练手项目
+// @version 1.0
+// @description 这是我的一个描述
+// @termsOfService http://swagger.io/terms/
+
+// @host http://192.168.3.62:8081
 func main() {
 	// 初始化validator校验翻译器
 	if err := service.InitTrans("zh"); err != nil {

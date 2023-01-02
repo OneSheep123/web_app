@@ -76,6 +76,17 @@ func GetPostList(ctx *gin.Context) {
 	ResponseSuccess(ctx, list)
 }
 
+// PostList2Handler 获取帖子列表接口
+// @Summary 获取帖子列表接口
+// @Description 可分页进行获取帖子列表数据的接口
+// @Tags 帖子相关接口
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string false "Bearer 用户令牌"
+// @Param object query models.ParamOffset false "查询参数"
+// @Security ApiKeyAuth
+// @Success 200 {object} ResponseData
+// @Router /posts2 [get]
 func PostList2Handler(ctx *gin.Context) {
 	offset := new(models.ParamOffset)
 	if err := ctx.ShouldBindQuery(offset); err != nil {

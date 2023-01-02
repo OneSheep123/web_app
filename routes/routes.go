@@ -6,6 +6,10 @@ import (
 	"web_app/logger"
 	"web_app/middlewares"
 
+	swaggerFiles "github.com/swaggo/files"
+
+	gs "github.com/swaggo/gin-swagger"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,6 +18,8 @@ func Setup(mode string) *gin.Engine {
 	//	gin.SetMode(gin.ReleaseMode) // gin设置成发布模式
 	//}
 	r := gin.New()
+	r.GET("/swagger/*any", gs.WrapHandler(swaggerFiles.Handler))
+
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 	v1 := r.Group("/api/v1")
 	v1.POST("/login", controller.LoginHandler)
