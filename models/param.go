@@ -23,6 +23,6 @@ type ParamVoteData struct {
 
 // ParamOffset 请求参数
 type ParamOffset struct {
-	Page int `json:"page" form:"page"`
-	Size int `json:"size" form:"size"`
+	Page int `json:"page" form:"page" example:"1"`  // 页码
+	Size int `json:"size" form:"size" example:"12"` // 页长
 }

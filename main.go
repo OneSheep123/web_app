@@ -19,7 +19,7 @@ import (
 
 	"go.uber.org/zap"
 
-	_ "web_app/docs"
+	_ "web_app/docs" // 记得引入 然后记得有调整API后 每次要swag init一下
 )
 
 // @title gin练手项目
