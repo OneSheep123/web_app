@@ -2,9 +2,11 @@ package routes
 
 import (
 	"net/http"
+	"time"
 	"web_app/controller"
 	"web_app/logger"
 	"web_app/middlewares"
+	"web_app/settings"
 
 	swaggerFiles "github.com/swaggo/files"
 
@@ -20,7 +22,11 @@ func Setup(mode string) *gin.Engine {
 	r := gin.New()
 	r.GET("/swagger/*any", gs.WrapHandler(swaggerFiles.Handler))
 
-	r.Use(logger.GinLogger(), logger.GinRecovery(true))
+	rateLimit := settings.Conf.RateLimit
+	r.Use(logger.GinLogger(), logger.GinRecovery(true), middlewares.RateLimitMiddleware(time.Duration(rateLimit.FillInterval)*time.Second, rateLimit.Capacity))
+	r.GET("/ping", func(context *gin.Context) {
+		context.JSON(http.StatusOK, "pong")
+	})
 	v1 := r.Group("/api/v1")
 	v1.POST("/login", controller.LoginHandler)
 	v1.POST("/signup", controller.SignUpHandler)

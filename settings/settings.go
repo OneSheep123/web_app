@@ -18,6 +18,12 @@ type AppConfig struct {
 	*MySQLConfig `mapstructure:"mysql"`
 	*RedisConfig `mapstructure:"redis"`
 	*SnowFlake   `mapstructure:"snowflake"`
+	*RateLimit   `mapstructure:"rateLimit"`
+}
+
+type RateLimit struct {
+	FillInterval int64 `mapstructure:"fillInterval"`
+	Capacity     int64 `mapstructure:"capacity"`
 }
 
 type SnowFlake struct {
